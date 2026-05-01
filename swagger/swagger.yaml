@@ -1,0 +1,278 @@
+openapi: 3.0.3
+info:
+  title: Authorization Service API
+  version: "1.0"
+  description: API for authorization users.
+
+servers:
+  - url: http://localhost:8080
+    description: Local Server
+
+paths:
+  /v1/status:
+    get:
+      summary: Check status services
+      responses:
+        '200':
+          description: Status services
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponseStatus'
+
+  /auth/register:
+    post:
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Success register
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponseToken'
+        '400':
+          description: Request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponseError'
+
+  /auth/login:
+    post:
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Success login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponseToken'
+        '400':
+          description: Request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponseError'
+
+  /auth/refresh:
+    post:
+      summary: Update access-token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: New access and refresh tokens
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponseToken'
+        '400':
+          description: Request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponseError'
+
+  /auth/logout:
+    post:
+      summary: Logout session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '200':
+          description: Success logout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponseMessage'
+        '400':
+          description: Request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponseError'
+
+  /auth/me:
+    post:
+      summary: Get user info from access-token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeRequest'
+      responses:
+        '200':
+          description: User data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponseUser'
+        '400':
+          description: Request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponseError'
+
+components:
+  schemas:
+    StatusData:
+      type: object
+      properties:
+        statusAuth:
+          type: string
+          description: Status Authorization Service
+          example: "is work"
+        statusSession:
+          type: string
+          description: Status Session Service
+          example: "is work"
+          
+    DefaultResponseStatus:
+      allOf:
+        - $ref: '#/components/schemas/DefaultResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/StatusData'
+  
+    RegisterRequest:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+        client:
+          type: string
+          nullable: true
+        role:
+          type: string
+          nullable: true
+      required:
+        - login
+        - password
+        - email
+
+    LoginRequest:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+      required:
+        - login
+        - password
+
+    RefreshRequest:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
+
+    LogoutRequest:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
+
+    MeRequest:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
+
+    DefaultResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        data:
+          type: object
+          nullable: true
+
+    TokenData:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+
+    UserData:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        login:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+
+    DefaultResponseToken:
+      allOf:
+        - $ref: '#/components/schemas/DefaultResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TokenData'
+
+    DefaultResponseUser:
+      allOf:
+        - $ref: '#/components/schemas/DefaultResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/UserData'
+
+    DefaultResponseMessage:
+      allOf:
+        - $ref: '#/components/schemas/DefaultResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              nullable: true
+
+    DefaultResponseError:
+      allOf:
+        - $ref: '#/components/schemas/DefaultResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              nullable: true
